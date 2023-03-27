@@ -4,7 +4,7 @@ const cors = require('cors');
 require('dotenv').config();
 const bodyParser = require('body-parser')
 const { Client } = require('pg')
-let url = `postgres://toughoj:Toughoj@localhost:5432/movies`;
+let url = `postgres://postgres:12345@localhost:5432/movies`;
 const client = new Client(url)
 const moviesData= require('./data.json')
 const app = express()
@@ -54,8 +54,9 @@ function addMovieHandler(req,res){
     
 }
 
+
 function getMoviesHandler(req,res) {
-    let sql =`SELECT * FROM movies;`; 
+    let sql =`SELECT * FROM movies;`;
     client.query(sql).then((result)=>{
         console.log(result);
         res.json(result.rows)
