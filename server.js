@@ -23,7 +23,7 @@ app.post('/addMovie', addMovieHandler) ;
 app.get('/getMovies', getMoviesHandler);
 app.put('/updateMovies/:id',handleUpdate);
 app.delete('/deleteMovies/:id', handleDelete);
-app.put('/getSpecificMovie/:id', getSpecificMovieHandler)
+app.get('/getSpecificMovie/:id', getSpecificMovieHandler)
 
 
 //Handler
