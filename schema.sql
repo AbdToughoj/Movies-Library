@@ -1,5 +1,5 @@
-CREATE TABLE Movies(
-    id VARCHAR(255),
+CREATE TABLE movies(
+    id SERIAL PRIMARY KEY,
     title VARCHAR(255),
     personalComments VARCHAR(255)
 );

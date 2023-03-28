@@ -19,8 +19,12 @@ const port = 3000
 app.get('/', moviesDataHandler) ;
 app.get('/favorite', favoriteHandler) ;
 app.get('*', notFoundHandler) ;
-app.post('/addMovie', addMovieHandler)
+app.post('/addMovie', addMovieHandler) ;
 app.get('/getMovies', getMoviesHandler);
+app.put('/updateMovies/:id',handleUpdate);
+app.delete('/deleteMovies/:id', handleDelete);
+app.put('/getSpecificMovie/:id', getSpecificMovieHandler)
+
 
 //Handler
 function moviesDataHandler(req,res){
@@ -69,6 +73,39 @@ function errorHandler(error,req,res){
     res.status(500).send(error)
 }
 
+function handleUpdate(req,res){
+    let moviesId = req.params.id;
+    let {personalComments} = req.body;
+    let sql=`UPDATE movies SET personalComments = $1 
+    WHERE id = $2 RETURNING *;`;
+    let values = [personalComments,moviesId];
+    client.query(sql,values).then(result=>{
+        console.log(result.rows);
+        res.send(result.rows)
+    }).catch()
+
+}
+
+function handleDelete(req,res){
+    let {id} = req.params;
+    let sql=`DELETE FROM movies WHERE id = $1;` ;
+    let value = [id];
+    client.query(sql,value).then(result=>{
+        res.status(204).send("deleted");
+    }).catch()
+}
+
+function getSpecificMovieHandler(req,res) {
+    let {id} = req.params;
+    let sql =`SELECT * FROM movies WHERE id = $1;`;
+    let value = [id];
+    client.query(sql).then((result)=>{
+        console.log(result);
+        res.json(result.rows)
+    }).catch((err)=>{
+        errorHandler(err,req,res)
+    })
+}
 
 //constructor
 function Movies(title, poster_path, overview){
