@@ -4,7 +4,9 @@ const cors = require('cors');
 require('dotenv').config();
 const bodyParser = require('body-parser')
 const { Client } = new require('pg')
-const client = new Client(process.env.URL)
+const url = process.env.URL
+const client = new Client(url)
+
 const moviesData= require('./data.json')
 const app = express()
 app.use(cors());
