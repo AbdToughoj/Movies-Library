@@ -3,27 +3,26 @@ const express = require('express')
 const cors = require('cors');
 require('dotenv').config();
 const bodyParser = require('body-parser')
-const { Client } = require('pg')
-let url = `postgres://postgres:12345@localhost:5432/movies`;
-const client = new Client(url)
+const { Client } = new require('pg')
+const client = new Client(process.env.URL)
 const moviesData= require('./data.json')
 const app = express()
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json());
-const port = 3000
+const port = process.env.port;
 
 
 
 //home page
 app.get('/', moviesDataHandler) ;
 app.get('/favorite', favoriteHandler) ;
-app.get('*', notFoundHandler) ;
 app.post('/addMovie', addMovieHandler) ;
 app.get('/getMovies', getMoviesHandler);
 app.put('/updateMovies/:id',handleUpdate);
 app.delete('/deleteMovies/:id', handleDelete);
 app.get('/getSpecificMovie/:id', getSpecificMovieHandler)
+app.get('*', notFoundHandler) ;
 
 
 //Handler
@@ -42,13 +41,11 @@ function notFoundHandler(req,res){
 }
 
 function addMovieHandler(req,res){
-    console.log(req.body);
-    let {id, title, personalComments} = req.body;
-    let sql = `INSERT INTO movies (id, title, personalComments)
-    VALUES ($1,$2,$3) RETURNING *; `
-    let values = [id, title, personalComments]
+    let {title, personalComments} = req.body;
+    let sql = `INSERT INTO movies (title, personalComments)
+    VALUES ($1,$2) RETURNING *; `
+    let values = [title, personalComments]
     client.query(sql,values).then((result)=>{
-        console.log(result.rows)
         res.status(200).json(result.rows)
     }
 
@@ -62,7 +59,6 @@ function addMovieHandler(req,res){
 function getMoviesHandler(req,res) {
     let sql =`SELECT * FROM movies;`;
     client.query(sql).then((result)=>{
-        console.log(result);
         res.json(result.rows)
     }).catch((err)=>{
         errorHandler(err,req,res)
@@ -80,7 +76,6 @@ function handleUpdate(req,res){
     WHERE id = $2 RETURNING *;`;
     let values = [personalComments,moviesId];
     client.query(sql,values).then(result=>{
-        console.log(result.rows);
         res.send(result.rows)
     }).catch()
 
@@ -99,8 +94,7 @@ function getSpecificMovieHandler(req,res) {
     let {id} = req.params;
     let sql =`SELECT * FROM movies WHERE id = $1;`;
     let value = [id];
-    client.query(sql).then((result)=>{
-        console.log(result);
+    client.query(sql, value).then((result)=>{
         res.json(result.rows)
     }).catch((err)=>{
         errorHandler(err,req,res)
