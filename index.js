@@ -1,18 +1,19 @@
 
 const express = require('express')
 const cors = require('cors');
+const axios = require('axios');
 require('dotenv').config();
 const bodyParser = require('body-parser')
 const { Client } = new require('pg')
 const url = process.env.URL
 const client = new Client(url)
-
 const moviesData= require('./data.json')
 const app = express()
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json());
 const port = process.env.PORT;
+const my_key= process.env.MY_KEY;
 
 
 
@@ -23,7 +24,11 @@ app.post('/addMovie', addMovieHandler) ;
 app.get('/getMovies', getMoviesHandler);
 app.put('/updateMovies/:id',handleUpdate);
 app.delete('/deleteMovies/:id', handleDelete);
-app.get('/getSpecificMovie/:id', getSpecificMovieHandler)
+app.get('/getSpecificMovie/:id', getSpecificMovieHandler);
+app.get('/trending', trendingHandler);
+app.get('/search', searchHandler);
+app.get('/certification', certificationHandler);
+app.get('/popular', popularHandler);
 app.get('*', notFoundHandler) ;
 
 
@@ -103,11 +108,91 @@ function getSpecificMovieHandler(req,res) {
     })
 }
 
+function trendingHandler(req, res){
+    let url = `https://api.themoviedb.org/3/trending/all/week?api_key=${my_key}&language=en-US`;
+    axios.get(url)
+    .then((result)=>{
+         let trendDataForMovie = result.data.results.map((movies)=>{
+             return new trendMovie(movies.id, movies.title, movies.release_date, movies.poster_path , movies.overview);
+         })
+    
+         res.json(trendDataForMovie);
+    })
+    .catch((err)=>{
+        console.log(err);
+    })
+}
+
+function searchHandler(req, res){
+    let movieName = req.query.title;
+    let url = `https://api.themoviedb.org/3/search/movie?api_key=${my_key}&query=${movieName}`;
+    axios.get(url)
+    .then((result)=>{
+         let requestedMovie = result.data.results.map((movies)=>{
+             return new trendMovie(movies.id, movies.title, movies.release_date, movies.poster_path , movies.overview);
+         })
+         res.json(requestedMovie);
+    })
+    .catch((err)=>{
+        console.log(err);
+    })
+}
+
+function certificationHandler(req, res){
+    let url = `https://api.themoviedb.org/3/certification/movie/list?api_key=${my_key}`;
+    axios.get(url)
+    .then((result)=>{
+         let movieCertification = result.data.certifications.AU.map((certif)=>{
+             return new Certification(certif.certification, certif.meaning, certif.order);
+         })
+    
+         res.json(movieCertification);
+    })
+    .catch((err)=>{
+        console.log(err);
+    })
+}
+
+function popularHandler(req, res){
+    let url = `https://api.themoviedb.org/3/movie/popular?api_key=${my_key}&language=en-US&page=1`;
+    axios.get(url)
+    .then((result)=>{
+         let popularMovies = result.data.results.map((movies)=>{
+             return new PopularMovie(movies.id, movies.title, movies.popularity);
+         })
+    
+         res.json(popularMovies);
+    })
+    .catch((err)=>{
+        console.log(err);
+    })
+}
+
 //constructor
 function Movies(title, poster_path, overview){
     this.title=title;
     this.poster_path=poster_path;
     this.overview=overview;
+}
+
+function trendMovie(id, title, release_date, poster_path, overview){
+    this.id=id;
+    this.title=title;
+    this.release_date=release_date;
+    this.poster_path=poster_path;
+    this.overview=overview;
+}
+
+function Certification(certification, meaning, order){
+    this.certification=certification;
+    this.meaning=meaning;
+    this.order=order;
+}
+
+function PopularMovie(id, title, popularity){
+    this.id=id;
+    this.title=title;
+    this.popularity=popularity;
 }
 
 client.connect().then(()=>{
