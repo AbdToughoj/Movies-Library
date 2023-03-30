@@ -4,6 +4,7 @@
 
 ## WRRC
 ![WRRC lab11 Image](WRRC.jpg)
+![WRRC lab11 Image](Final(WRRC).jpg)
 
 ## Overview
 For lab 11, I will set up the server for the movie app and create the basic structures.
